@@ -1,0 +1,9 @@
+D:\sqldeveloper-23.1.1.345.2114-x64\flask_app\venv\Scripts
+
+cd .\flask_app\
+python -m venv venv
+.\venv\Scripts\activate
+(python -m pip install -- upgrade pip) -> did not work then, I ran this -> (python.exe -m pip install --upgrade pip)
+python -m pip install flask
+
+python -m flask --app .\app.py run 
