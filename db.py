@@ -7,28 +7,36 @@ conn = connect(
     database="tcs"
 )
 
-def callDB(query, data=None):
-    try:
-        mycursor = conn.cursor()
+def getCursor():    
+    cursor = conn.cursor()
+    return cursor
 
-        if data:
-            mycursor.execute(query, data)
-        else:
-            mycursor.execute(query)
+def closeCursor(mycursor):
+    mycursor.close()
 
-        res = mycursor.fetchall()
+      
+# def callDB(query, data=None):
+#     try:
+#         mycursor = conn.cursor()
 
-        column_names = [i[0] for i in mycursor.description] 
-        result_with_column_names = []
+#         if data:
+#             mycursor.execute(query, data)
+#         else:
+#             mycursor.execute(query)
 
-        for row in res:
-            result_with_column_names.append(dict(zip(column_names, row)))
+#         res = mycursor.fetchall()
+
+#         column_names = [i[0] for i in mycursor.description] 
+#         result_with_column_names = []
+
+#         for row in res:
+#             result_with_column_names.append(dict(zip(column_names, row)))
         
-        return result_with_column_names
+#         return result_with_column_names
 
-    finally:
-        if mycursor:  
-            mycursor.close()  # Close the cursor in the finally block
+#     finally:
+#         if mycursor:  
+#             mycursor.close()  # Close the cursor in the finally block
 
 def closeConn():
     conn.close()

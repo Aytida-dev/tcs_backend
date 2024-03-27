@@ -1,21 +1,99 @@
+# from app import app
+# from mysql.connector import connect
+# from flask import jsonify
+# from flask_cors import CORS
+# from util import convertTODict
+
+# conn = connect(
+#     user="root",
+#     password="password",
+#     host="localhost",
+#     database="tcs"
+# )
+
+# CORS(app, resources={r"/application_details": {"origins": "http://localhost:3000"}})  # Allow requests from http://localhost:3000
+
+# @app.route('/application_details', methods=['GET'])
+# def get_app_details():
+#     # cursor = None
+#     try:
+#         cursor = conn.cursor()
+#         query = "SELECT * FROM APPLICATION_DETAILS_TABLE"
+#         cursor.execute(query)
+#         rows = cursor.fetchall()
+#         columnName = cursor.description
+#         res = convertTODict(columnName, rows)
+
+#         app_name_list = [row["APP_NAME"] for row in res]
+#         cursor.close()
+#         # conn.close()
+#         return jsonify(app_name_list)
+#     except Exception as e:
+#         return jsonify({'error': str(e)})
+
+
 from app import app
-from db import callDB
+from mysql.connector import pooling
 from flask import jsonify
 from flask_cors import CORS
+from util import convertTODict
 
-CORS(app, resources={r"/application_details": {"origins": "http://localhost:3000"}})  # Allow requests from http://localhost:3000
-@app.route('/application_details' , methods=['GET'])
+# Create a connection pool for MySQL connections
+dbconfig = {
+    "user": "root",
+    "password": "password",
+    "host": "localhost",
+    "database": "tcs"
+}
+pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **dbconfig)
 
+# Enable CORS for your Flask app
+CORS(app, resources={r"/application_details": {"origins": "http://localhost:3000"}})
+
+# Define route to retrieve application details
+@app.route('/application_details', methods=['GET'])
 def get_app_details():
     try:
+        # Get a connection from the pool
+        conn = pool.get_connection()
+
+        # Create a cursor to execute queries
+        cursor = conn.cursor()
+
+        # Define the query to retrieve application details
         query = "SELECT * FROM APPLICATION_DETAILS_TABLE"
-        res = callDB(query)
+        
+        # Execute the query
+        cursor.execute(query)
+        
+        # Fetch all rows from the result
+        rows = cursor.fetchall()
+        
+        # Convert the result into a dictionary
+        columnName = cursor.description
+        res = convertTODict(columnName, rows)
+
+        # Extract app names from the result
         app_name_list = [row["APP_NAME"] for row in res]
+        
+        # Close the cursor
+        cursor.close()
+
+        # Release the connection back to the pool
+        conn.close()
+
+        # Return the list of app names as JSON response
         return jsonify(app_name_list)
+    
     except Exception as e:
-        return jsonify({'error': str(e)}) 
+        # Return an error message in case of any exceptions
+        return jsonify({'error': str(e)})
+
     
     
+    
+
+
 # import cx_Oracle
 # from flask import Flask, jsonify
 # from app import app
