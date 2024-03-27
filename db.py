@@ -1,18 +1,16 @@
-from mysql.connector import connect
+from mysql.connector import pooling
 
-conn = connect(
-    user="root",
-    password="password",
-    host="localhost",
-    database="tcs"
-)
+dbconfig = {
+    "user": "root",
+    "password": "root",
+    "host": "localhost",
+    "database": "tcs"
+}
 
-def getCursor():    
-    cursor = conn.cursor()
-    return cursor
+pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **dbconfig)
 
-def closeCursor(mycursor):
-    mycursor.close()
+
+
 
       
 # def callDB(query, data=None):
@@ -37,9 +35,6 @@ def closeCursor(mycursor):
 #     finally:
 #         if mycursor:  
 #             mycursor.close()  # Close the cursor in the finally block
-
-def closeConn():
-    conn.close()
 
 
 # from mysql.connector import connect

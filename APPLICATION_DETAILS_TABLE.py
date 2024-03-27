@@ -33,19 +33,12 @@
 
 
 from app import app
-from mysql.connector import pooling
 from flask import jsonify
 from flask_cors import CORS
 from util import convertTODict
+from db import pool
 
 # Create a connection pool for MySQL connections
-dbconfig = {
-    "user": "root",
-    "password": "password",
-    "host": "localhost",
-    "database": "tcs"
-}
-pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **dbconfig)
 
 # Enable CORS for your Flask app
 CORS(app, resources={r"/application_details": {"origins": "http://localhost:3000"}})
@@ -54,40 +47,20 @@ CORS(app, resources={r"/application_details": {"origins": "http://localhost:3000
 @app.route('/application_details', methods=['GET'])
 def get_app_details():
     try:
-        # Get a connection from the pool
         conn = pool.get_connection()
-
-        # Create a cursor to execute queries
-        cursor = conn.cursor()
-
-        # Define the query to retrieve application details
+        cursor = conn.cursor(dictionary=True)
         query = "SELECT * FROM APPLICATION_DETAILS_TABLE"
-        
-        # Execute the query
         cursor.execute(query)
-        
-        # Fetch all rows from the result
         rows = cursor.fetchall()
-        
-        # Convert the result into a dictionary
-        columnName = cursor.description
-        res = convertTODict(columnName, rows)
-
-        # Extract app names from the result
-        app_name_list = [row["APP_NAME"] for row in res]
-        
-        # Close the cursor
-        cursor.close()
-
-        # Release the connection back to the pool
-        conn.close()
-
-        # Return the list of app names as JSON response
+        app_name_list = [row["APP_NAME"] for row in rows]
         return jsonify(app_name_list)
+ 
     
     except Exception as e:
-        # Return an error message in case of any exceptions
         return jsonify({'error': str(e)})
+    finally:
+        cursor.close()
+        conn.close()
 
     
     
